@@ -1,0 +1,46 @@
+#Loading all libraries reqd
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import sklearn.linear_model #model 1
+#import sklearn.neighbors   #model 2
+
+df1 = pd.read_csv('GDP.csv') #Converting csv file into a dataframe
+df2 = pd.read_csv('HappinessIndex.csv') #Converting csv file into a dataframeb
+
+df1_sorted = df1.sort_values(by = 'TIME',axis = 0,ascending=False) #Sort all data based on year
+
+indexNum = df1_sorted[(df1_sorted['TIME']<2020)].index #Fetch the index of all datapoints of year before 2020
+
+df1_sorted.drop(indexNum,inplace = True) #Remove all datapoints before year 2020
+
+df1_1 = df1_sorted[['LOCATION','Value']] #Display dataframe with only location and value columns
+
+df1_1.sort_values(by = 'LOCATION', axis = 0, ascending = True) #Sort data based on location
+
+df2 = df2[df2["INEQUALITY"]=="TOT"] #Filter data with column inequality for total population
+
+df2_1 = df2[['LOCATION','Indicator','Value']] #Display dataframe with only Location,Indicator and Value
+
+df2_1 = df2_1[df2_1["Indicator"]=="Life satisfaction"] #Filter data with column inequality for Life Satisfaction
+
+df2_1 = df2_1[['LOCATION','Value']] #Display dataframe with only Location and Value
+
+df2_1.sort_values(by = 'LOCATION', axis = 0, ascending = True) #Sort dataframe based on location
+
+df3 = df1_1.merge(df2_1,how='inner',on='LOCATION') #Merge the 2 dataframes
+
+df3 = df3.rename(columns={"Value_x": "GDP Per capita (USD)", "Value_y": "Life Satisfaction"}) #Rename the column names of the new dataframe
+
+X = np.c_[df3["GDP Per capita (USD)"]] #Form arrays containing only values of GDP and Life Satisfaction
+y = np.c_[df3["Life Satisfaction"]]
+
+df3.plot(kind='scatter',x="GDP Per capita (USD)", y="Life Satisfaction"); #Plot data
+plt.show()
+
+model = sklearn.linear_model.LinearRegression() #Select model for performing regression
+#model = sklearn.neighbors.KNeighborsRegressor(n_neighbors=3)
+model.fit(X,y) #Fit the X and y to the selected model
+
+X_new = [[65000]] #Select new GDP value for which Life Satisfaction needs to be predicted
+print(model.predict(X_new)) #Print predicted value
